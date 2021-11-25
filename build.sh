@@ -168,16 +168,22 @@ if hasArg clean; then
     set -e
 fi
 
-################################################################################
-# Configure, build, and install libcugraph
-if buildAll || hasArg libcugraph; then
-    if (( ${BUILD_ALL_GPU_ARCH} == 0 )); then
+if (( ${BUILD_ALL_GPU_ARCH} == 0 )); then
+    if [[ -z "${CUGRAPH_GPU_ARCHS}" ]]; then
         CUGRAPH_CMAKE_CUDA_ARCHITECTURES="NATIVE"
         echo "Building for the architecture of the GPU in the system..."
     else
-        CUGRAPH_CMAKE_CUDA_ARCHITECTURES="ALL"
-        echo "Building for *ALL* supported GPU architectures..."
+        CUGRAPH_CMAKE_CUDA_ARCHITECTURES="${CUGRAPH_GPU_ARCHS}"
+        echo "Building for GPU architectures: ${CUGRAPH_GPU_ARCHS}..."
     fi
+else
+    CUGRAPH_CMAKE_CUDA_ARCHITECTURES="ALL"
+    echo "Building for *ALL* supported GPU architectures..."
+fi
+
+################################################################################
+# Configure, build, and install libcugraph
+if buildAll || hasArg libcugraph; then
     mkdir -p ${LIBCUGRAPH_BUILD_DIR}
     cd ${LIBCUGRAPH_BUILD_DIR}
     cmake -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} \
@@ -193,13 +199,6 @@ fi
 
 # Configure, build, and install libcugraph_etl
 if buildAll || hasArg libcugraph_etl; then
-    if (( ${BUILD_ALL_GPU_ARCH} == 0 )); then
-        CUGRAPH_CMAKE_CUDA_ARCHITECTURES="NATIVE"
-        echo "Building for the architecture of the GPU in the system..."
-    else
-        CUGRAPH_CMAKE_CUDA_ARCHITECTURES="ALL"
-        echo "Building for *ALL* supported GPU architectures..."
-    fi
     mkdir -p ${LIBCUGRAPH_ETL_BUILD_DIR}
      cd ${LIBCUGRAPH_ETL_BUILD_DIR}
     cmake -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} \
