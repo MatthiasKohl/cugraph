@@ -45,3 +45,5 @@ dependencies:
 - pytest-cov
 - gtest
 - gmock
+# needed because some tests seem to require clock_gettime from libc >= 2.17
+- sysroot_linux-64=2.17
